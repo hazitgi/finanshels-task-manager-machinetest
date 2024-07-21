@@ -58,5 +58,5 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 node_modules
 .DS_Store
 .next
-package-lock.json
 build
+dist
