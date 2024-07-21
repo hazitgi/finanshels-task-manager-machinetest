@@ -9,7 +9,6 @@ export class TaskService {
   constructor(private prisma: PrismaService) {}
   async create(taskCreateInput: Prisma.TaskCreateInput) {
     try {
-      console.log('create task...`);', taskCreateInput);
       const result = await this.prisma.task.create({
         data: taskCreateInput,
       });
@@ -20,9 +19,9 @@ export class TaskService {
     }
   }
 
-  async findAll() {
+  async findAll(boardId: string) {
     try {
-      const boards = await this.prisma.task.findMany();
+      const boards = await this.prisma.task.findMany({ where: { boardId } });
       return boards;
     } catch (error) {
       this.logger.error(`Error fetching boards: ${error.message}`);
@@ -34,11 +33,17 @@ export class TaskService {
     return this.prisma.task.findUnique({ where: { id } });
   }
 
-  update(id: string, data: Prisma.TaskUpdateInput) {
-    return this.prisma.board.update({ where: { id }, data });
+  async update(id: string, data: Prisma.TaskUpdateInput) {
+    try {
+      const result = await this.prisma.task.update({ where: { id }, data });
+      return result;
+    } catch (error) {
+      this.logger.error(`Failed to update task: ${error.message}`);
+      throw error;
+    }
   }
 
   remove(id: string) {
-    return this.prisma.board.delete({ where: { id } });
+    return this.prisma.task.delete({ where: { id } });
   }
 }
