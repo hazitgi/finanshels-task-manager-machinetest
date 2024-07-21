@@ -65,13 +65,63 @@ export class BoardService {
   }
 
   async update(id: string, data: Prisma.BoardUpdateInput): Promise<Board> {
-    return this.prisma.board.update({
-      where: { id },
-      data,
-      include: {
-        columns: true, // Include columns in the returned board
-      },
-    });
+    try {
+      // First, fetch the existing board with its columns
+      const existingBoard = await this.prisma.board.findUnique({
+        where: { id },
+        include: { columns: true },
+      });
+
+      if (!existingBoard) {
+        throw new CustomError('Board not found', 'CustomError');
+      }
+
+      // Prepare the update data
+      const updateData: Prisma.BoardUpdateInput = {
+        ...data,
+        columns: {
+          update: [],
+          create: [],
+        },
+      };
+
+      // Process column updates
+      if (data.columns && Array.isArray(data.columns.update)) {
+        for (const columnUpdate of data.columns.update) {
+          const existingColumn = existingBoard.columns.find(
+            (col) => col.id === columnUpdate.where.id,
+          );
+
+          if (existingColumn) {
+            (
+              updateData.columns
+                .update as Prisma.ColumnUpdateWithWhereUniqueWithoutBoardInput[]
+            ).push(
+              columnUpdate as Prisma.ColumnUpdateWithWhereUniqueWithoutBoardInput,
+            );
+          } else {
+            // If the column doesn't exist, create it instead
+            (
+              updateData.columns
+                .create as Prisma.ColumnCreateWithoutBoardInput[]
+            ).push({
+              ...columnUpdate.data,
+            } as Prisma.ColumnCreateWithoutBoardInput);
+          }
+        }
+      }
+      // Perform the update
+      return this.prisma.board.update({
+        where: { id },
+        data: updateData,
+        include: {
+          columns: true,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`Failed to update board: ${error.message}`);
+      throw error;
+    }
   }
 
   async remove(id: string): Promise<Board | null> {

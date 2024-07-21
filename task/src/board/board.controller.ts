@@ -17,11 +17,16 @@ import { Prisma } from '@prisma/client';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { CustomError } from 'common/exceptions/custom.error';
 import { UpdateBoardDto } from './dto/update-board.dto';
+import { NatsStreamingService } from 'src/nats/nats.service';
+import { EventSubjects } from 'common/events/subjects';
 
 @Controller('board')
 export class BoardController {
   private readonly logger = new Logger(BoardController.name);
-  constructor(private readonly boardService: BoardService) {}
+  constructor(
+    private readonly boardService: BoardService,
+    private readonly natsStreamingService: NatsStreamingService,
+  ) {}
 
   @Post()
   @UsePipes(new ValidationPipe({ transform: true }))
@@ -36,6 +41,9 @@ export class BoardController {
         },
       };
       const result = await this.boardService.create(transformedData);
+      this.natsStreamingService.publish(EventSubjects.BOARD_CREATED, {
+        data: result,
+      });
       return result;
     } catch (error: any) {
       this.logger.error(`Failed to create board: ${error.message}`);
@@ -95,7 +103,11 @@ export class BoardController {
           },
         }),
       };
+
       const result = await this.boardService.update(id, transformedData);
+      this.natsStreamingService.publish(EventSubjects.BOARD_UPDATED, {
+        data: result,
+      });
       return result;
     } catch (error: any) {
       this.logger.error(`Failed to update board: ${error.message}`);
@@ -113,6 +125,9 @@ export class BoardController {
   async remove(@Param('id') id: string) {
     try {
       const result = await this.boardService.remove(id);
+      this.natsStreamingService.publish(EventSubjects.BOARD_REMOVED, {
+        data: result,
+      });
       return result;
     } catch (error: any) {
       if (error instanceof CustomError) {
