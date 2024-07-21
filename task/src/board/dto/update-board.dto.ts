@@ -23,7 +23,11 @@ class UpdateColumnDto {
   @IsString({ message: 'Column color must be a string' })
   @IsNotEmpty({ message: 'Column color is required' })
   color?: string;
-  id: any;
+
+  @IsOptional()
+  @IsString({ message: 'Board name must be a string' })
+  @IsNotEmpty({ message: 'Board name is required' })
+  id?: string;
 }
 
 export class UpdateBoardDto {

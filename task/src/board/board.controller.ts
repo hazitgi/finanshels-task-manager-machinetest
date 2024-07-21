@@ -10,6 +10,7 @@ import {
   HttpStatus,
   HttpException,
   Put,
+  Logger,
 } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { Prisma } from '@prisma/client';
@@ -19,6 +20,7 @@ import { UpdateBoardDto } from './dto/update-board.dto';
 
 @Controller('board')
 export class BoardController {
+  private readonly logger = new Logger(BoardController.name);
   constructor(private readonly boardService: BoardService) {}
 
   @Post()
@@ -36,6 +38,7 @@ export class BoardController {
       const result = await this.boardService.create(transformedData);
       return result;
     } catch (error: any) {
+      this.logger.error(`Failed to create board: ${error.message}`);
       if (error instanceof CustomError) {
         throw new HttpException(error.message, HttpStatus.CONFLICT);
       }
@@ -52,8 +55,20 @@ export class BoardController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.boardService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    try {
+      const result = await this.boardService.findOne(id);
+      return result;
+    } catch (error: any) {
+      this.logger.error(`Failed to find board: ${error.message}`);
+      if (error instanceof CustomError) {
+        throw new HttpException(error.message, HttpStatus.CONFLICT);
+      }
+      throw new HttpException(
+        'Internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Put(':id')
@@ -70,7 +85,7 @@ export class BoardController {
         ...(UpdateBoardDto.columns && {
           columns: {
             update: UpdateBoardDto.columns.map((column) => ({
-              where: { id: column.id },
+              where: { id: column?.id },
               data: {
                 ...(column.name && { name: column.name }),
                 ...(column.slug && { slug: column.slug }),
@@ -83,6 +98,7 @@ export class BoardController {
       const result = await this.boardService.update(id, transformedData);
       return result;
     } catch (error: any) {
+      this.logger.error(`Failed to update board: ${error.message}`);
       if (error instanceof CustomError) {
         throw new HttpException(error.message, HttpStatus.CONFLICT);
       }
@@ -94,7 +110,38 @@ export class BoardController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.boardService.remove(id);
+  async remove(@Param('id') id: string) {
+    try {
+      const result = await this.boardService.remove(id);
+      return result;
+    } catch (error: any) {
+      if (error instanceof CustomError) {
+        throw new HttpException(error.message, HttpStatus.CONFLICT);
+      }
+      throw new HttpException(
+        'Internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Delete(':boardId/column/:columnId')
+  async deleteColumn(
+    @Param('boardId') boardId: string,
+    @Param('columnId') columnId: string,
+  ) {
+    try {
+      const result = await this.boardService.removeColumn(boardId, columnId);
+      return result;
+    } catch (error: any) {
+      this.logger.error(`Failed to delete column: ${error.message}`);
+      if (error instanceof CustomError) {
+        throw new HttpException(error.message, HttpStatus.CONFLICT);
+      }
+      throw new HttpException(
+        'Internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
