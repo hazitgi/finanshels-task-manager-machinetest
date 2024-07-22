@@ -1,0 +1,75 @@
+version: "3.8"
+
+services:
+  nats:
+    image: nats-streaming:0.17.0
+    command:
+      [
+        "-p",
+        "4222",
+        "-m",
+        "8222",
+        "-hbi",
+        "5s",
+        "-hbt",
+        "5s",
+        "-hbf",
+        "2",
+        "-SD",
+        "-cid",
+        "task_manager",
+      ]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    restart: unless-stopped
+
+  task_manager_db:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+      # - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+    # command: mongod --replSet rs0 --bind_ip_all
+    restart: unless-stopped
+
+  task_manager_service:
+    build:
+      context: ./task
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      # DATABASE_URL: mongodb://task_manager_db:27017/task_manager
+      DATABASE_URL: mongodb+srv://hazitgi:10ywYcu2N9DpjmQR@cluster0.zk59qiz.mongodb.net/task_manager?retryWrites=true&w=majority
+      NATS_CLUSTER_ID: task_manager
+      NATS_URL: nats://nats:4222
+    depends_on:
+      - task_manager_db
+      - nats
+    volumes:
+      - ./task:/app
+    working_dir: /app
+    command: npm run start:dev
+    restart: unless-stopped
+
+  notification-service:
+    build:
+      context: ./notifications
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      NATS_CLUSTER_ID: task_manager
+      NATS_URL: nats://nats:4222
+    depends_on:
+      - nats
+    volumes:
+      - ./notifications:/app
+    working_dir: /app
+    command: npm run start
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
