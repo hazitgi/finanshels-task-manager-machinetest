@@ -7,12 +7,14 @@ export class NatsStreamingService implements OnModuleInit, OnModuleDestroy {
   private client: nats.Stan;
   private clientId: string;
   private clusterId: string;
+  private nats_url: string;
 
   constructor() {
     this.clusterId = process.env.NATS_CLUSTER_ID;
     this.clientId = randomBytes(16).toString('hex');
-    this.client = nats.connect('task_manager', this.clientId, {
-      url: 'http://localhost:4222',
+    this.nats_url = process.env.NATS_URL;
+    this.client = nats.connect(this.clusterId, this.clientId, {
+      url: this.nats_url,
       // connectTimeout: 5000, // Timeout in milliseconds
     });
     console.log('clusterId', this.clusterId);
