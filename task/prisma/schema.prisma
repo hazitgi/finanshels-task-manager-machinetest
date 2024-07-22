@@ -1,45 +1,39 @@
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model Board {
-  id      String    @id @default(auto()) @map("_id") @db.ObjectId
+  id      Int      @id @default(autoincrement())
   name    String   
-  slug    String    @unique
+  slug    String   @unique
   tasks   Task[]
   columns Column[]
 }
 
 model Column {
-  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  id      Int      @id @default(autoincrement())
   name    String
   slug    String
   color   String
   board   Board  @relation(fields: [boardId], references: [id])
-  boardId String @db.ObjectId
+  boardId Int
   tasks   Task[]
 }
 
 model Task {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  id          Int      @id @default(autoincrement())
   title       String
   slug        String
   description String?
   order       Int
+  subtasks    Json      // This will store an array of Subtask objects
   column      Column    @relation(fields: [columnId], references: [id])
-  columnId    String    @db.ObjectId
+  columnId    Int
   board       Board     @relation(fields: [boardId], references: [id])
-  boardId     String    @db.ObjectId
-  subtasks    Subtask[]
-}
-
-type Subtask {
-  title       String
-  isCompleted Boolean
+  boardId     Int
 }

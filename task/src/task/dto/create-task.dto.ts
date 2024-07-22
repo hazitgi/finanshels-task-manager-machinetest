@@ -40,11 +40,11 @@ export class CreateTaskDto {
   @Type(() => SubtaskDto)
   subtasks: SubtaskDto[];
 
-  @IsString()
+  @IsNumber()
   @IsNotEmpty({ message: 'Column ID is required' })
-  column: string;
+  column: number;
 
-  @IsString()
+  @IsNumber()
   @IsNotEmpty({ message: 'Board ID is required' })
-  board: string;
+  board: number;
 }

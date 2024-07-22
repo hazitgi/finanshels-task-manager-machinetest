@@ -65,7 +65,7 @@ export class BoardController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {
-      const result = await this.boardService.findOne(id);
+      const result = await this.boardService.findOne(+id);
       return result;
     } catch (error: any) {
       this.logger.error(`Failed to find board: ${error.message}`);
@@ -104,7 +104,7 @@ export class BoardController {
         }),
       };
 
-      const result = await this.boardService.update(id, transformedData);
+      const result = await this.boardService.update(+id, transformedData);
       this.natsStreamingService.publish(EventSubjects.BOARD_UPDATED, {
         data: result,
       });
@@ -124,7 +124,7 @@ export class BoardController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     try {
-      const result = await this.boardService.remove(id);
+      const result = await this.boardService.remove(+id);
       this.natsStreamingService.publish(EventSubjects.BOARD_REMOVED, {
         data: result,
       });
@@ -146,7 +146,24 @@ export class BoardController {
     @Param('columnId') columnId: string,
   ) {
     try {
-      const result = await this.boardService.removeColumn(boardId, columnId);
+      const result = await this.boardService.removeColumn(+boardId, +columnId);
+      return result;
+    } catch (error: any) {
+      this.logger.error(`Failed to delete column: ${error.message}`);
+      if (error instanceof CustomError) {
+        throw new HttpException(error.message, HttpStatus.CONFLICT);
+      }
+      throw new HttpException(
+        'Internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get(':boardId/column')
+  async bordColumnWithTask(@Param('boardId') boardId: string) {
+    try {
+      const result = await this.boardService.findAllColumnTask(+boardId);
       return result;
     } catch (error: any) {
       this.logger.error(`Failed to delete column: ${error.message}`);

@@ -51,7 +51,23 @@ export class BoardService {
     }
   }
 
-  async findOne(id: string): Promise<Board | null> {
+  async findAllColumnTask(boardId: number): Promise<Board[]> {
+    try {
+      const boards = await this.prisma.column.findMany({
+        where: { boardId },
+        include: {
+          tasks: true,
+        },
+      });
+      this.logger.log(`Found ${boards.length} boards`);
+      return boards;
+    } catch (error) {
+      this.logger.error(`Error fetching boards: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async findOne(id: number): Promise<Board | null> {
     try {
       const result = await this.prisma.board.findUnique({
         where: { id },
@@ -64,7 +80,7 @@ export class BoardService {
     }
   }
 
-  async update(id: string, data: Prisma.BoardUpdateInput): Promise<Board> {
+  async update(id: number, data: Prisma.BoardUpdateInput): Promise<Board> {
     try {
       // First, fetch the existing board with its columns
       const existingBoard = await this.prisma.board.findUnique({
@@ -124,7 +140,7 @@ export class BoardService {
     }
   }
 
-  async remove(id: string): Promise<Board | null> {
+  async remove(id: number): Promise<Board | null> {
     try {
       const board = await this.prisma.board.findUnique({ where: { id } });
       if (!board) {
@@ -143,6 +159,11 @@ export class BoardService {
             boardId: id,
           },
         });
+        await this.prisma.task.deleteMany({
+          where: {
+            boardId: id,
+          },
+        });
       }
       // Then delete the board
       await this.prisma.board.delete({
@@ -157,7 +178,7 @@ export class BoardService {
   }
 
   // service to delete a column from a board
-  async removeColumn(boardId: string, columnId: string): Promise<Board | null> {
+  async removeColumn(boardId: number, columnId: number): Promise<Board | null> {
     try {
       const board = await this.prisma.board.findUnique({
         where: { id: boardId },

@@ -32,8 +32,12 @@ export class TaskController {
   @Post()
   @UsePipes(new ValidationPipe({ transform: true }))
   async create(@Body() createTaskDto: CreateTaskDto) {
+    console.log('>>>>>>>>>>>>>>>>>>');
+
     try {
       // Transform the DTO to match Prisma's input types if necessary
+      console.log('createTaskDto', createTaskDto);
+
       const taskCreateInput: Prisma.TaskCreateInput = {
         ...createTaskDto,
         column: { connect: { id: createTaskDto.column } },
@@ -65,7 +69,7 @@ export class TaskController {
   async findAll(@Param('boardId') boardId: string) {
     try {
       // Call the service method to create the task
-      const result = await this.taskService.findAll(boardId);
+      const result = await this.taskService.findAll(+boardId);
       return result;
     } catch (error: any) {
       if (error instanceof CustomError) {
@@ -80,7 +84,7 @@ export class TaskController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.taskService.findOne(id);
+    return this.taskService.findOne(+id);
   }
 
   @Put(':id')
@@ -112,7 +116,7 @@ export class TaskController {
       };
 
       // Call the service to perform the update
-      const result = await this.taskService.update(id, transformedData);
+      const result = await this.taskService.update(+id, transformedData);
       this.natsStreamingService.publish(EventSubjects.TASK_UPDATED, {
         data: result,
       });
@@ -132,7 +136,7 @@ export class TaskController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     try {
-      const result = await this.taskService.remove(id);
+      const result = await this.taskService.remove(+id);
       this.natsStreamingService.publish(EventSubjects.TASK_UPDATED, {
         data: result,
       });

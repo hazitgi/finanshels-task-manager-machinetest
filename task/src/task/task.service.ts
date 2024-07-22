@@ -8,6 +8,8 @@ export class TaskService {
   private readonly logger = new Logger(TaskService.name);
   constructor(private prisma: PrismaService) {}
   async create(taskCreateInput: Prisma.TaskCreateInput) {
+    console.log(taskCreateInput);
+
     try {
       const result = await this.prisma.task.create({
         data: taskCreateInput,
@@ -19,7 +21,7 @@ export class TaskService {
     }
   }
 
-  async findAll(boardId: string) {
+  async findAll(boardId: number) {
     try {
       const boards = await this.prisma.task.findMany({ where: { boardId } });
       return boards;
@@ -29,11 +31,11 @@ export class TaskService {
     }
   }
 
-  findOne(id: string) {
+  findOne(id: number) {
     return this.prisma.task.findUnique({ where: { id } });
   }
 
-  async update(id: string, data: Prisma.TaskUpdateInput) {
+  async update(id: number, data: Prisma.TaskUpdateInput) {
     try {
       const result = await this.prisma.task.update({ where: { id }, data });
       return result;
@@ -43,7 +45,7 @@ export class TaskService {
     }
   }
 
-  remove(id: string) {
+  remove(id: number) {
     return this.prisma.task.delete({ where: { id } });
   }
 }

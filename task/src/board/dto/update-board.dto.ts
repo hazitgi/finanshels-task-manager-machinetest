@@ -5,6 +5,7 @@ import {
   IsArray,
   ValidateNested,
   ArrayMinSize,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -25,9 +26,9 @@ class UpdateColumnDto {
   color?: string;
 
   @IsOptional()
-  @IsString({ message: 'Board name must be a string' })
+  @IsNumber()
   @IsNotEmpty({ message: 'Board name is required' })
-  id?: string;
+  id?: number;
 }
 
 export class UpdateBoardDto {

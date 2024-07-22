@@ -44,10 +44,10 @@ export class UpdateTaskDto {
   @Type(() => SubtaskDto)
   subtasks?: SubtaskDto[];
 
-  @IsString()
+  @IsNumber()
   @IsOptional()
   @IsNotEmpty({ message: 'Column ID must be a non-empty string if provided' })
-  columnId?: string;
+  columnId?: number;
 
   //   @IsString()
   //   @IsOptional()
