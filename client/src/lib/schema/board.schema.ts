@@ -1,7 +1,6 @@
 import { z } from "zod";
 export const boardSchema = z.object({
   name: z.string().min(2).max(55),
-  slug: z.string().min(2).max(55),
   columns: z
     .array(
       z

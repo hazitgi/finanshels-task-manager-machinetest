@@ -42,14 +42,13 @@ export default function SideBar() {
     reValidateMode: "onChange",
     defaultValues: {
       name: "",
-      slug: "",
       columns: [],
     },
   });
   const [statusTxt, setStatusTx] = useState<string>("");
   const handleBoardAdd = (values: BoardSchema) => {
-    alert("hello")
-    console.log("ehi");
+    const userConfirmatin = window.confirm('Are you sure you want to add a new board?')
+    if (!userConfirmatin) { return }
 
     const slug = values.name.toLowerCase().replace(/\s+/g, '-');
     const columns = values.columns.map((item) => {
@@ -64,10 +63,8 @@ export default function SideBar() {
       slug: slug,
       columns: [...columns]
     }
-
-    console.log("data", data);
-
     dispatch(addNewBoard(data));
+    modalRef.current?.click();
 
   };
   return (
