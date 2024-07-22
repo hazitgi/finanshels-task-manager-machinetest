@@ -2,7 +2,7 @@
 import { DraggableCard } from "@/components/app/draggable-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { moveTasks } from "@/redux/reducers/task.reducer";
+import { fetchBoard, fetchColumnTask, moveTasks, setErrorData } from "@/redux/reducers/task.reducer";
 import { useAppSelector, useAppDispatch } from "@/redux/store";
 import { TodoColumn } from "@/types/todo.types";
 import { Plus, X } from "lucide-react";
@@ -14,13 +14,13 @@ import {
   DropResult,
 } from "react-beautiful-dnd";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { date, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { statusAddSchema } from "../../lib/schema/statusAddschema";
-const Home = () => {
-  const { columns: reduxCol } = useAppSelector((state) => state.task);
-  const dispatch = useAppDispatch();
 
+const Home = () => {
+  const { columns: reduxCol, error, selectedBoardId } = useAppSelector((state) => state.task);
+  const dispatch = useAppDispatch();
   const [columns, setColumns] = useState<TodoColumn[]>([]);
 
   useEffect(() => {
@@ -39,7 +39,7 @@ const Home = () => {
     mode: "onChange",
     reValidateMode: "onChange",
   });
-  const handleStatusAddFormSubmit = (values: StatusSchema) => {};
+  const handleStatusAddFormSubmit = (values: StatusSchema) => { };
   const handleDragEnd = (result: DropResult) => {
     console.log("Drag result:", result); // Debugging output
 

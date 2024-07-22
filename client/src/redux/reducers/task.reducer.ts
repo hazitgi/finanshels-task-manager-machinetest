@@ -1,13 +1,16 @@
+import API from "@/app/(root)/api";
 import { TaskReducerInitial } from "@/types/taskReducer.type";
-import { createSlice } from "@reduxjs/toolkit";
+import { TodoColumn } from "@/types/todo.types";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { AxiosError } from "axios";
 
 const initialState: TaskReducerInitial = {
   loading: false,
   error: false,
   boards: [
-    { name: "Task1", _id: "asdf" },
-    { name: "Task2", _id: "asdifou" },
-    { name: "Task3", _id: "asfd" },
+    { name: "Task1", id: "asdf", slug: "task1" },
+    { name: "Task2", id: "asdifou", slug: "task1" },
+    { name: "Task3", id: "asfd", slug: "task1" },
   ],
   columns: [
     {
@@ -120,17 +123,66 @@ const initialState: TaskReducerInitial = {
       ],
     },
   ],
+  selectedBoardId: null,
 };
+
+// Async thunk to fetch tasks
+export const fetchBoard = createAsyncThunk(
+  'tasks/fetchBoard',
+  async (_, thunkAPI) => {
+    try {
+      const response = await API.get('/board');
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const fetchColumnTask = createAsyncThunk(
+  'tasks/fetchColumnTask',
+  async (id, thunkAPI) => {
+    console.log(id);
+
+    try {
+      const response = await API.get(`board/${id}/column`);
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data);
+    }
+  }
+);
+
 const taskReducer = createSlice({
   name: "task-reducer",
   initialState: initialState,
   reducers: {
-    moveTasks: (state, { payload }) => {
+    moveTasks: (state, { payload }: { payload: Array<TodoColumn> }) => {
       state.columns = payload;
-      
     },
+    setErrorData: (state, { payload }: { payload: any | string }) => {
+      state.error = payload;
+    },
+    setSelectedBoard: (state, { payload }: { payload: string }) => {
+      state.selectedBoardId = payload;
+    }
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchBoard.fulfilled, (state, action) => {
+        state.boards = action.payload;
+      })
+      .addCase(fetchBoard.rejected, (state, action) => {
+        state.error = action.payload as string;
+      })
+      .addCase(fetchColumnTask.fulfilled, (state, action) => {
+        state.columns = action.payload;
+      })
+      .addCase(fetchColumnTask.rejected, (state, action) => {
+        state.error = action.payload as string;
+      })
   },
 });
 
 export default taskReducer.reducer;
-export const { moveTasks } = taskReducer.actions;
+export const { moveTasks, setErrorData, setSelectedBoard } = taskReducer.actions;

@@ -1,19 +1,23 @@
 "use client";
-import { useAppSelector } from "@/redux/store";
 import { Logs, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { Input } from "../../../components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { boardSchema } from "../../../lib/schema/board.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAppSelector, useAppDispatch } from "@/redux/store";
+import { fetchBoard, setSelectedBoard } from "@/redux/reducers/task.reducer";
+
 export default function SideBar() {
+  const dispatch = useAppDispatch();
   const { boards } = useAppSelector((state) => state.task);
   const modalRef = useRef<HTMLButtonElement>(null);
   type BoardSchema = z.infer<typeof boardSchema>;
+
   const {
     watch,
     setValue,
@@ -54,9 +58,10 @@ export default function SideBar() {
         <div className="mt-6">
           {boards?.map((item) => (
             <Link
-              key={item._id}
+              key={item.id}
               href={"/"}
-              className="flex px-5 items-center h-12 gap-3 relative hover:bg-black/5 transition-all duration-300"
+              className="flex px-5 items-center h-12 gap-3 relative hover:bg-black/5 transition-all duration-300 cursor-pointer"
+              onClick={() => { dispatch(setSelectedBoard(item.id)) }}
             >
               <div>
                 <Logs className="w-5" />
