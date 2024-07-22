@@ -10,13 +10,24 @@ import { useForm } from "react-hook-form";
 import { boardSchema } from "../../../lib/schema/board.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAppSelector, useAppDispatch } from "@/redux/store";
-import { fetchBoard, setSelectedBoard } from "@/redux/reducers/task.reducer";
+import { addNewBoard, fetchBoard, setSelectedBoard } from "@/redux/reducers/task.reducer";
+import { getRandomColor } from "@/lib/utils";
 
 export default function SideBar() {
   const dispatch = useAppDispatch();
-  const { boards } = useAppSelector((state) => state.task);
+  const { boards, selectedBoardId } = useAppSelector((state) => state.task);
   const modalRef = useRef<HTMLButtonElement>(null);
   type BoardSchema = z.infer<typeof boardSchema>;
+
+  useEffect(() => {
+    const fetchAndSetBoard = async () => {
+      await dispatch(fetchBoard());
+      if (boards.length > 0 && selectedBoardId === null) {
+        dispatch(setSelectedBoard(boards[0].id));
+      }
+    };
+    fetchAndSetBoard();
+  }, [dispatch]);
 
   const {
     watch,
@@ -31,11 +42,34 @@ export default function SideBar() {
     reValidateMode: "onChange",
     defaultValues: {
       name: "",
-      status: [],
+      slug: "",
+      columns: [],
     },
   });
   const [statusTxt, setStatusTx] = useState<string>("");
-  const handleBoardAdd = (values: BoardSchema) => {};
+  const handleBoardAdd = (values: BoardSchema) => {
+    alert("hello")
+    console.log("ehi");
+
+    const slug = values.name.toLowerCase().replace(/\s+/g, '-');
+    const columns = values.columns.map((item) => {
+      return {
+        name: item,
+        slug: item.toLocaleLowerCase().replace(/\s+/g, '-'),
+        color: getRandomColor()
+      }
+    })
+    const data = {
+      name: values.name,
+      slug: slug,
+      columns: [...columns]
+    }
+
+    console.log("data", data);
+
+    dispatch(addNewBoard(data));
+
+  };
   return (
     <aside className="h-screen overflow-y-auto scroll-smooth scrollbar-thin min-w-56 border-r  flex flex-col justify-between">
       <div className="flex-col flex">
@@ -57,10 +91,10 @@ export default function SideBar() {
         </div>
         <div className="mt-6">
           {boards?.map((item) => (
-            <Link
+            <div
               key={item.id}
-              href={"/"}
-              className="flex px-5 items-center h-12 gap-3 relative hover:bg-black/5 transition-all duration-300 cursor-pointer"
+              // href={"/"}
+              className={`flex px-5 items-center h-12 gap-3 relative hover:bg-black/5 transition-all duration-300 cursor-pointer ${item.id === selectedBoardId ? "bg-slate-300" : ""}`}
               onClick={() => { dispatch(setSelectedBoard(item.id)) }}
             >
               <div>
@@ -68,7 +102,7 @@ export default function SideBar() {
               </div>
               <span className="text-sm font-medium">{item.name}</span>
               <div className="absolute top-0 right-0 h-full w-2 bg-black/10 shadow-md rounded-tl-md rounded-bl-md"></div>
-            </Link>
+            </div>
           ))}
         </div>
       </div>
@@ -117,22 +151,23 @@ export default function SideBar() {
                       className="bg-blue-600 text-sm "
                       onClick={() => {
                         if (statusTxt.trim()) {
-                          let ar = getValues("status");
-                          setValue("status", [...ar, statusTxt]);
+                          let ar = getValues("columns");
+                          setValue("columns", [...ar, statusTxt]);
                           setStatusTx("");
-                          trigger("status");
+                          trigger("columns");
                         }
                       }}
                     >
                       Add
                     </Button>
+                    <br />
                   </div>
                   <span className="text-[13px] text-red-600">
-                    {errors && errors.status && errors.status.message}
+                    {errors && errors.columns && errors.columns.message}
                   </span>
                 </div>
                 <div className="w-full flex flex-wrap gap-2">
-                  {watch("status")?.map((val, I) => (
+                  {watch("columns")?.map((val, I) => (
                     <div
                       key={val}
                       className="px-3 h-9 flex justify-between gap-2 items-center bg-forgroundSecondary-1/10 text-sm rounded-md"
@@ -141,9 +176,9 @@ export default function SideBar() {
                       <X
                         className="w-4 cursor-pointer"
                         onClick={() => {
-                          let ar = getValues("status");
+                          let ar = getValues("columns");
                           ar.splice(I, 1);
-                          setValue("status", ar);
+                          setValue("columns", ar);
                         }}
                       />
                     </div>

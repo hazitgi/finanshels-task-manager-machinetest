@@ -5,7 +5,7 @@ interface Subtask {
 
 interface Task {
   title: string;
-  id: string; // Changed to string
+  id: string | number; // Changed to string
   slug: string;
   description: string;
   status: string; // Added status
@@ -16,7 +16,7 @@ interface Task {
 }
 
 export interface TodoColumn {
-  id: string; // Changed to string
+  id: string | number; // Changed to string
   name: string;
   slug: string;
   color?: string;
@@ -25,9 +25,17 @@ export interface TodoColumn {
 }
 
 export interface TodoBoard {
-  id: string | number;
+  id?: string | number;
   name: string;
   slug: string;
-  tasks: Task[];
-  columns: TodoColumn[];
+  columns: TodoColumnCreationInput[];
+}
+
+export interface TodoColumnCreationInput {
+  id?: string | number; // Changed to string
+  name: string;
+  slug: string;
+  color?: string;
+  boardId?: string; // Added to match the data
+  tasks?: Task[]; // Array of Task objects
 }

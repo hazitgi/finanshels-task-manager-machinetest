@@ -19,9 +19,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { statusAddSchema } from "../../lib/schema/statusAddschema";
 
 const Home = () => {
-  const { columns: reduxCol, error, selectedBoardId } = useAppSelector((state) => state.task);
+  const { columns: reduxCol, error, selectedBoardId, } = useAppSelector((state) => state.task);
   const dispatch = useAppDispatch();
   const [columns, setColumns] = useState<TodoColumn[]>([]);
+
+  useEffect(() => {
+    dispatch(fetchColumnTask({ columnId: selectedBoardId }));
+  }, [dispatch, selectedBoardId])
 
   useEffect(() => {
     setColumns(reduxCol as TodoColumn[]);
@@ -179,7 +183,7 @@ const Home = () => {
                           {column.tasks?.map((task, index) => (
                             <Draggable
                               key={task.id}
-                              draggableId={task.id}
+                              draggableId={`${task.id}`}
                               index={index}
                             >
                               {(provided) => (

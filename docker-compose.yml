@@ -92,7 +92,7 @@ services:
       context: ./client
       dockerfile: Dockerfile
     ports:
-      - "5000:3000"
+      - "3000:3000"
     depends_on:
       - task_manager_service
     volumes:
