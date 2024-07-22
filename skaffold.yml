@@ -26,3 +26,11 @@ build:
         manual:
           - src: "**/*.js"
             dest: .
+    - image: hazitgi/next-kanban-dashboard-client
+      context: client
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "**/*.js"
+            dest: .
