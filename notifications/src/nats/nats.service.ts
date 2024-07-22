@@ -16,7 +16,8 @@ export class NatsStreamingService implements OnModuleInit, OnModuleDestroy {
 
   constructor() {
     this.clusterId = process.env.NATS_CLUSTER_ID;
-    this.clientId = randomBytes(16).toString('hex');
+    this.clientId =
+      process.env.NATS_CLIENT_ID || randomBytes(16).toString('hex');
     this.nats_url = process.env.NATS_URL;
     this.client = nats.connect(this.clusterId, this.clientId, {
       url: this.nats_url,
