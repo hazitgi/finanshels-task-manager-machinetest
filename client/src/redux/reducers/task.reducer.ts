@@ -1,6 +1,6 @@
 import API from "@/app/(root)/api";
 import { TaskReducerInitial } from "@/types/taskReducer.type";
-import { TodoBoard, TodoColumn } from "@/types/todo.types";
+import { TodoBoard, TodoColumn, Task } from "@/types/todo.types";
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 
@@ -183,7 +183,46 @@ const taskReducer = createSlice({
     },
     setSelectedBoard: (state, { payload }: { payload: number | string }) => {
       state.selectedBoardId = payload;
-    }
+    },
+
+    // real-time updates
+    boardCreated: (state, action: PayloadAction<any>) => {
+      state.boards.push(action.payload);
+      state.columns = action.payload.columns;
+    },
+    boardUpdated: (state, action: PayloadAction<any>) => {
+      const index = state.boards.findIndex(board => board.id === action.payload.id);
+      if (index !== -1) {
+        state.boards[index] = action.payload;
+      }
+      state.columns = action.payload.columns;
+    },
+    boardRemoved: (state, action: PayloadAction<{ id: string }>) => {
+      state.boards = state.boards.filter(board => board.id !== action.payload.id);
+      state.columns = state.columns?.filter(column => column.boardId !== action.payload.id) || [];
+    },
+    taskCreated: (state, action: PayloadAction<{ columnId: string | number; task: Task }>) => {
+      const column = state.columns?.find(col => col.id === action.payload.columnId);
+      if (column) {
+        column.tasks.push(action.payload.task);
+      }
+    },
+    taskUpdated: (state, action: PayloadAction<{ columnId: string | number; task: Task }>) => {
+      const column = state.columns?.find(col => col.id === action.payload.columnId);
+      if (column) {
+        const taskIndex = column.tasks.findIndex(task => task.id === action.payload.task.id);
+        if (taskIndex !== -1) {
+          column.tasks[taskIndex] = action.payload.task;
+        }
+      }
+    },
+    taskRemoved: (state, action: PayloadAction<{ columnId: string | number; taskId: string | number }>) => {
+      const column = state.columns?.find(col => col.id === action.payload.columnId);
+      if (column) {
+        column.tasks = column.tasks.filter(task => task.id !== action.payload.taskId);
+      }
+    },
+    // real-time updates end
   },
   extraReducers: (builder) => {
     builder
@@ -210,4 +249,4 @@ const taskReducer = createSlice({
 });
 
 export default taskReducer.reducer;
-export const { moveTasks, setErrorData, setSelectedBoard } = taskReducer.actions;
+export const { moveTasks, setErrorData, setSelectedBoard, boardCreated, boardUpdated, boardRemoved, taskCreated, taskRemoved, taskUpdated } = taskReducer.actions;

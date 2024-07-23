@@ -3,7 +3,7 @@ interface Subtask {
   isCompleted: boolean;
 }
 
-interface Task {
+export interface Task {
   title: string;
   id: string | number; // Changed to string
   slug: string;

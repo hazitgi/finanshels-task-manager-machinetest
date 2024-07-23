@@ -2,7 +2,7 @@
 import { DraggableCard } from "@/components/app/draggable-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { fetchBoard, fetchColumnTask, moveTasks, setErrorData } from "@/redux/reducers/task.reducer";
+import { boardCreated, fetchBoard, fetchColumnTask, moveTasks, setErrorData } from "@/redux/reducers/task.reducer";
 import { useAppSelector, useAppDispatch } from "@/redux/store";
 import { TodoColumn } from "@/types/todo.types";
 import { Plus, X } from "lucide-react";
@@ -17,6 +17,8 @@ import { useForm } from "react-hook-form";
 import { date, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { statusAddSchema } from "../../lib/schema/statusAddschema";
+import useSocket from "@/hooks/useSocket";
+import { BOARD_CREATED, BOARD_REMOVED, BOARD_UPDATED } from "@/redux/reducers/actionType";
 
 const Home = () => {
   const { columns: reduxCol, error, selectedBoardId, } = useAppSelector((state) => state.task);
@@ -30,6 +32,23 @@ const Home = () => {
   useEffect(() => {
     setColumns(reduxCol as TodoColumn[]);
   }, [reduxCol]);
+
+  const socket = useSocket(process.env.NEXT_SOCKET_URL || "http://localhost:5000");
+  useEffect(() => {
+    BOARD_CREATED
+    if (socket) {
+      socket.on(BOARD_CREATED, (data) => {
+        dispatch(boardCreated(data));
+      });
+      socket.on(BOARD_REMOVED, (data) => {
+        dispatch(boardCreated(data));
+      });
+      socket.on(BOARD_UPDATED, (data) => {
+        dispatch(boardCreated(data));
+      });
+    }
+
+  }, [socket])
 
   type StatusSchema = z.infer<typeof statusAddSchema>;
   const {
