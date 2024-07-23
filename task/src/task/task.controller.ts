@@ -42,10 +42,10 @@ export class TaskController {
         ...createTaskDto,
         column: { connect: { id: createTaskDto.column } },
         board: { connect: { id: createTaskDto.board } },
-        subtasks: createTaskDto.subtasks.map((subtask) => ({
-          title: subtask.title,
-          isCompleted: subtask.isCompleted,
-        })),
+        // subtasks: createTaskDto.subtasks.map((subtask) => ({
+        //   title: subtask.title,
+        //   isCompleted: subtask.isCompleted,
+        // })),
       };
 
       // Call the service method to create the task
@@ -100,12 +100,12 @@ export class TaskController {
         ...(updateTaskDto.order !== undefined && {
           order: updateTaskDto.order,
         }),
-        ...(updateTaskDto.subtasks && {
-          subtasks: updateTaskDto.subtasks.map((subtask) => ({
-            title: subtask.title,
-            isCompleted: subtask.isCompleted,
-          })),
-        }),
+        // ...(updateTaskDto.subtasks && {
+        // subtasks: updateTaskDto.subtasks.map((subtask) => ({
+        //   title: subtask.title,
+        //   isCompleted: subtask.isCompleted,
+        // })),
+        // }),
 
         ...(updateTaskDto.columnId && {
           column: { connect: { id: updateTaskDto.columnId } },

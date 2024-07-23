@@ -10,7 +10,6 @@ datasource db {
 model Board {
   id      Int      @id @default(autoincrement())
   name    String   
-
   tasks   Task[]
   columns Column[]
 }
@@ -29,7 +28,6 @@ model Task {
   title       String
   description String?
   order       Int
-  subtasks    Json      // This will store an array of Subtask objects
   column      Column    @relation(fields: [columnId], references: [id])
   columnId    Int
   board       Board     @relation(fields: [boardId], references: [id])

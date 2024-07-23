@@ -1,22 +1,22 @@
 import {
   IsString,
   IsOptional,
-  IsBoolean,
-  IsArray,
+  // IsBoolean,
+  // IsArray,
   IsNumber,
   IsNotEmpty,
-  ValidateNested,
+  // ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+// import { Type } from 'class-transformer';
 
-class SubtaskDto {
-  @IsString()
-  @IsOptional()
-  title?: string;
+// class SubtaskDto {
+//   @IsString()
+//   @IsOptional()
+//   title?: string;
 
-  @IsBoolean()
-  isCompleted: boolean;
-}
+//   @IsBoolean()
+//   isCompleted: boolean;
+// }
 export class UpdateTaskDto {
   @IsString()
   @IsOptional()
@@ -38,11 +38,11 @@ export class UpdateTaskDto {
   @IsNotEmpty({ message: 'Order must be a number if provided' })
   order?: number;
 
-  @IsArray()
-  @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => SubtaskDto)
-  subtasks?: SubtaskDto[];
+  // @IsArray()
+  // @IsOptional()
+  // @ValidateNested({ each: true })
+  // @Type(() => SubtaskDto)
+  // subtasks?: SubtaskDto[];
 
   @IsNumber()
   @IsOptional()

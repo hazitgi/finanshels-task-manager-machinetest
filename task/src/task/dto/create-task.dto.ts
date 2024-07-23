@@ -1,13 +1,13 @@
 import {
   IsString,
   IsNotEmpty,
-  ValidateNested,
+  // ValidateNested,
   IsOptional,
   IsBoolean,
-  IsArray,
+  // IsArray,
   IsNumber,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+// import { Type } from 'class-transformer';
 
 export class SubtaskDto {
   @IsString()
@@ -35,10 +35,10 @@ export class CreateTaskDto {
   @IsNotEmpty({ message: 'Order Number is required' })
   order: number;
 
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => SubtaskDto)
-  subtasks: SubtaskDto[];
+  // @IsArray()
+  // @ValidateNested({ each: true })
+  // @Type(() => SubtaskDto)
+  // subtasks: SubtaskDto[];
 
   @IsNumber()
   @IsNotEmpty({ message: 'Column ID is required' })
