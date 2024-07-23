@@ -18,7 +18,7 @@ model Column {
   id      Int      @id @default(autoincrement())
   name    String
   color   String
-  board   Board  @relation(fields: [boardId], references: [id])
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
   boardId Int
   tasks   Task[]
 }
@@ -28,8 +28,8 @@ model Task {
   title       String
   description String?
   order       Int
-  column      Column    @relation(fields: [columnId], references: [id])
+  column      Column    @relation(fields: [columnId], references: [id], onDelete: Cascade)
   columnId    Int
-  board       Board     @relation(fields: [boardId], references: [id])
+  board       Board     @relation(fields: [boardId], references: [id], onDelete: Cascade)
   boardId     Int
 }

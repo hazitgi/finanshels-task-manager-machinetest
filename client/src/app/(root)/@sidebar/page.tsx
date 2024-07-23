@@ -19,6 +19,7 @@ import {
 import { getRandomColor } from "@/lib/utils";
 import { EditBoard } from "@/components/app/edit-bard";
 import API from "../api";
+import { TodoBoard } from "@/types/todo.types";
 
 export default function SideBar() {
   const dispatch = useAppDispatch();

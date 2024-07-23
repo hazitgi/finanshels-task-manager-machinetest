@@ -11,12 +11,6 @@ export class BoardService {
 
   async create(data: Prisma.BoardCreateInput): Promise<Board> {
     try {
-      const dataAlreadyExists = await this.prisma.board.findFirst({
-        where: { name: data.name },
-      });
-      if (dataAlreadyExists) {
-        throw new CustomError('Board name already exists', 'CustomError');
-      }
       const result = await this.prisma.board.create({
         data: {
           name: data.name,

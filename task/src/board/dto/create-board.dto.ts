@@ -27,9 +27,9 @@ export class CreateBoardDto {
   @IsNotEmpty({ message: 'Board name is required' })
   name: string;
 
-  @IsString({ message: 'Board boardId must be a string' })
-  @IsNotEmpty({ message: 'Board boardId is required' })
-  boardId: string;
+  // @IsString({ message: 'Board boardId must be a string' })
+  // @IsNotEmpty({ message: 'Board boardId is required' })
+  // boardId: string;
 
   @IsArray({ message: 'Columns must be an array' })
   @ValidateNested({ each: true, message: 'Each column must be a valid object' })

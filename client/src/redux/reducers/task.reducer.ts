@@ -159,10 +159,9 @@ export const fetchColumnTask = createAsyncThunk(
 
 export const addNewBoard = createAsyncThunk(
   'tasks/addNewBoard',
-  async ({ name, slug, columns }: TodoBoard, thunkAPI) => {
+  async ({ name, columns }: TodoBoard, thunkAPI) => {
     try {
-      const response = await API.post(`/board`, { name, slug, columns });
-      console.log(">>>>>>>>>>>>", response.data, ">>>>>");
+      const response = await API.post(`/board`, { name, columns });
 
       return response.data;
     } catch (error: any) {
@@ -234,7 +233,7 @@ const taskReducer = createSlice({
     builder
       .addCase(fetchBoard.fulfilled, (state, action) => {
         state.boards = action.payload;
-        state.selectedBoardId = action?.payload[0].id;
+        state.selectedBoardId = action?.payload[0]?.id;
       })
       .addCase(fetchBoard.rejected, (state, action) => {
         state.error = action.payload as string;
