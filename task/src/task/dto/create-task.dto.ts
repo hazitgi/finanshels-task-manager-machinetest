@@ -23,9 +23,9 @@ export class CreateTaskDto {
   @IsNotEmpty({ message: 'Title is required' })
   title: string;
 
-  @IsString()
-  @IsNotEmpty({ message: 'Slug is required' })
-  slug: string;
+  // @IsString()
+  // @IsNotEmpty({ message: 'Slug is required' })
+  // slug: string;
 
   @IsString()
   @IsOptional()

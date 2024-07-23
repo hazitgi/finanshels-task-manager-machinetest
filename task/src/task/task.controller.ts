@@ -93,7 +93,7 @@ export class TaskController {
       // Transform the data to ensure it's in the correct format
       const transformedData: Prisma.TaskUpdateInput = {
         ...(updateTaskDto.title && { title: updateTaskDto.title }),
-        ...(updateTaskDto.slug && { slug: updateTaskDto.slug }),
+        // ...(updateTaskDto.slug && { slug: updateTaskDto.slug }),
         ...(updateTaskDto.description && {
           description: updateTaskDto.description,
         }),

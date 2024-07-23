@@ -35,7 +35,7 @@ export class BoardController {
       // Transform the data to ensure it's in the correct format
       const transformedData: Prisma.BoardCreateInput = {
         name: createBoardDto.name,
-        slug: createBoardDto.slug,
+        // slug: createBoardDto.slug,
         columns: {
           create: createBoardDto?.columns || [],
         },
@@ -89,15 +89,15 @@ export class BoardController {
       // Transform the data to ensure it's in the correct format
       const transformedData: Prisma.BoardUpdateInput = {
         ...(UpdateBoardDto.name && { name: UpdateBoardDto.name }),
-        ...(UpdateBoardDto.slug && { slug: UpdateBoardDto.slug }),
+        // ...(UpdateBoardDto.slug && { slug: UpdateBoardDto.slug }),
         ...(UpdateBoardDto.columns && {
           columns: {
             update: UpdateBoardDto.columns.map((column) => ({
               where: { id: column?.id },
               data: {
                 ...(column.name && { name: column.name }),
-                ...(column.slug && { slug: column.slug }),
-                ...(column.color && { color: column.color }),
+                // ...(column.slug && { slug: column.slug }),
+                // ...(column.color && { color: column.color }),
               },
             })),
           },

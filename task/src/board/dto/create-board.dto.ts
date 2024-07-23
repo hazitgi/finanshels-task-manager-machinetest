@@ -13,9 +13,9 @@ class CreateColumnDto {
   @IsNotEmpty({ message: 'Column name is required' })
   name: string;
 
-  @IsString({ message: 'Column slug must be a string' })
-  @IsNotEmpty({ message: 'Column slug is required' })
-  slug: string;
+  // @IsString({ message: 'Column slug must be a string' })
+  // @IsNotEmpty({ message: 'Column slug is required' })
+  // slug: string;
 
   @IsString({ message: 'Column color must be a string' })
   @IsNotEmpty({ message: 'Column color is required' })
@@ -27,9 +27,9 @@ export class CreateBoardDto {
   @IsNotEmpty({ message: 'Board name is required' })
   name: string;
 
-  @IsString({ message: 'Board slug must be a string' })
-  @IsNotEmpty({ message: 'Board slug is required' })
-  slug: string;
+  // @IsString({ message: 'Board slug must be a string' })
+  // @IsNotEmpty({ message: 'Board slug is required' })
+  // slug: string;
 
   @IsArray({ message: 'Columns must be an array' })
   @ValidateNested({ each: true, message: 'Each column must be a valid object' })

@@ -15,15 +15,15 @@ class UpdateColumnDto {
   @IsNotEmpty({ message: 'Column name is required' })
   name?: string;
 
-  @IsOptional()
-  @IsString({ message: 'Column slug must be a string' })
-  @IsNotEmpty({ message: 'Column slug is required' })
-  slug?: string;
+  // @IsOptional()
+  // @IsString({ message: 'Column slug must be a string' })
+  // @IsNotEmpty({ message: 'Column slug is required' })
+  // slug?: string;
 
-  @IsOptional()
-  @IsString({ message: 'Column color must be a string' })
-  @IsNotEmpty({ message: 'Column color is required' })
-  color?: string;
+  // @IsOptional()
+  // @IsString({ message: 'Column color must be a string' })
+  // @IsNotEmpty({ message: 'Column color is required' })
+  // color?: string;
 
   @IsOptional()
   @IsNumber()

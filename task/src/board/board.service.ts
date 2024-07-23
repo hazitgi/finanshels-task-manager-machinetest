@@ -12,7 +12,7 @@ export class BoardService {
   async create(data: Prisma.BoardCreateInput): Promise<Board> {
     try {
       const dataAlreadyExists = await this.prisma.board.findFirst({
-        where: { slug: data.slug },
+        where: { name: data.name },
       });
       if (dataAlreadyExists) {
         throw new CustomError('Board name already exists', 'CustomError');
@@ -20,7 +20,7 @@ export class BoardService {
       const result = await this.prisma.board.create({
         data: {
           name: data.name,
-          slug: data.slug,
+          // slug: data.slug,
           columns: {
             create: data.columns?.create || [],
           },

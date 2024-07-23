@@ -23,10 +23,10 @@ export class UpdateTaskDto {
   @IsNotEmpty({ message: 'Title must be a non-empty string if provided' })
   title?: string;
 
-  @IsString()
-  @IsOptional()
-  @IsNotEmpty({ message: 'Slug must be a non-empty string if provided' })
-  slug?: string;
+  // @IsString()
+  // @IsOptional()
+  // @IsNotEmpty({ message: 'Slug must be a non-empty string if provided' })
+  // slug?: string;
 
   @IsString()
   @IsOptional()
