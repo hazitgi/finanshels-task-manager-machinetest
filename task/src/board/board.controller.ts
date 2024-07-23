@@ -147,6 +147,9 @@ export class BoardController {
   ) {
     try {
       const result = await this.boardService.removeColumn(+boardId, +columnId);
+      this.natsStreamingService.publish(EventSubjects.COLUMN_REMOVED, {
+        data: result,
+      });
       return result;
     } catch (error: any) {
       this.logger.error(`Failed to delete column: ${error.message}`);

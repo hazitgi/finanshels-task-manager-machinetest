@@ -137,7 +137,7 @@ export class TaskController {
   async remove(@Param('id') id: string) {
     try {
       const result = await this.taskService.remove(+id);
-      this.natsStreamingService.publish(EventSubjects.TASK_UPDATED, {
+      this.natsStreamingService.publish(EventSubjects.TASK_REMOVED, {
         data: result,
       });
       return result;
