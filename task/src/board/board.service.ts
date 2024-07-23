@@ -56,7 +56,11 @@ export class BoardService {
       const boards = await this.prisma.column.findMany({
         where: { boardId },
         include: {
-          tasks: true,
+          tasks: {
+            orderBy: {
+              order: 'asc',
+            },
+          },
         },
       });
       this.logger.log(`Found ${boards.length} boards`);
