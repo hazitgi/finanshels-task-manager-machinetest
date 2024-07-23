@@ -140,6 +140,9 @@ export class TaskController {
         ...(updateTaskDto.order !== undefined && {
           order: updateTaskDto.order,
         }),
+        ...(updateTaskDto.columnId && {
+          column: { connect: { id: updateTaskDto.columnId } },
+        }),
       };
 
       // Call the service to perform the update

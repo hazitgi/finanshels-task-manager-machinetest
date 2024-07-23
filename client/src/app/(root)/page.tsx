@@ -81,11 +81,12 @@ const Home = () => {
       socket.on(COLUMN_REMOVED, (data) => {
         dispatch(columnRemoved(data));
       });
-      socket.on(TASK_DRAGGED, (data) => {
-        dispatch(columnRemoved(data));
+      socket.on(TASK_DRAGGED, async (data) => {
+        dispatch(taskRemoved(data));
+        dispatch(taskCreated(data));
       });
     }
-  }, [socket]);
+  }, [socket, dispatch]);
 
   type StatusSchema = z.infer<typeof statusAddSchema>;
   const {
@@ -104,21 +105,21 @@ const Home = () => {
 
   const handleDragEnd = async (result: DropResult) => {
     const { draggableId, source, destination } = result;
-  
+
     // If there's no destination, return
     if (!destination) return;
-  
+
     // If the source and destination are the same, return
     if (source.droppableId === destination.droppableId && source.index === destination.index) {
       return;
     }
-  
+
     // Create a deep copy of the columns array
     const updatedColumns = columns.map((column) => ({
       ...column,
       tasks: column.tasks.map((task) => ({ ...task })), // Ensure tasks are deeply copied
     }));
-  
+
     // Find the source and destination columns
     const startColumnIndex = updatedColumns.findIndex(
       (col) => col.id === parseInt(source.droppableId)
@@ -126,18 +127,18 @@ const Home = () => {
     const endColumnIndex = updatedColumns.findIndex(
       (col) => col.id === parseInt(destination.droppableId)
     );
-  
+
     if (startColumnIndex !== -1 && endColumnIndex !== -1) {
       const startColumn = updatedColumns[startColumnIndex];
       const endColumn = updatedColumns[endColumnIndex];
-  
+
       let updatedTask: Task | null = null;
-  
+
       // Reorder tasks within the same column
       if (source.droppableId === destination.droppableId) {
         const [movedTask] = startColumn.tasks.splice(source.index, 1);
         startColumn.tasks.splice(destination.index, 0, movedTask);
-  
+
         // Update the task's order in the start column
         startColumn.tasks = startColumn.tasks.map((task, index) => {
           if (task.id === parseInt(draggableId)) {
@@ -149,11 +150,11 @@ const Home = () => {
       } else {
         // Move tasks between columns
         const [movedTask] = startColumn.tasks.splice(source.index, 1);
-  
+
         // Update the moved task's columnId and order
         updatedTask = { ...movedTask, columnId: destination.droppableId.toString(), order: destination.index + 1 };
         endColumn.tasks.splice(destination.index, 0, updatedTask);
-  
+
         // Update the task's order in the destination column
         endColumn.tasks = endColumn.tasks.map((task, index) => {
           if (task.id === parseInt(draggableId)) {
@@ -161,24 +162,24 @@ const Home = () => {
           }
           return { ...task, order: index + 1 };
         });
-  
+
         // Update the task's order in the start column
         startColumn.tasks = startColumn.tasks.map((task, index) => ({
           ...task,
           order: index + 1,
         }));
       }
-  
+
       // Save the updated task data to the API
       if (updatedTask) {
         try {
           let columnId = parseInt(updatedTask.columnId)
-          await API.put(`/task/${updatedTask.id}/drag`, {...updatedTask,columnId});
+          await API.put(`/task/${updatedTask.id}/drag`, { ...updatedTask, columnId });
         } catch (error) {
           console.error('Failed to save task data:', error);
         }
       }
-  
+
       // Update the state with the modified columns array
       // setColumns(updatedColumns);
       dispatch(moveTasks(updatedColumns));
