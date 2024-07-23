@@ -1,0 +1,36 @@
+apiVersion: skaffold/v4beta3
+kind: Config
+manifests:
+  rawYaml:
+    - ./infra/k8s/*
+build:
+  local:
+    push: false # if true image will push docker hub every new build
+  # googleCloudBuild:
+  #   projectId: ticketing-dev-407905
+  artifacts:
+    # - image: us.gcr.io/ticketing-dev-407905/auth  # if we run inside of GCP
+    - image: hazitgi/task
+      context: task
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: .
+    - image: hazitgi/notifications
+      context: notifications
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "**/*.js"
+            dest: .
+    - image: hazitgi/next-kanban-dashboard-client
+      context: client
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "**/*.js"
+            dest: .

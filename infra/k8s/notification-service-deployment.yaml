@@ -1,0 +1,54 @@
+# notification-service-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+        - name: notification-service
+          image: hazitgi/notifications
+          ports:
+            - containerPort: 5000
+          env:
+            - name: NATS_CLUSTER_ID
+              value: task_manager
+            - name: NATS_URL
+              value: http://nats-srv:4222
+            - name: NATS_CLIENT_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+spec:
+  ports:
+    - port: 5000
+      targetPort: 5000
+  selector:
+    app: notification-service
+
+---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: notification-nodeport-service
+# spec:
+#   ports:
+#     - port: 4000
+#       targetPort: 4000
+#       nodePort: 30001 # You can specify your preferred node port here
+#   selector:
+#     app: notification-service
+#   type: NodePort

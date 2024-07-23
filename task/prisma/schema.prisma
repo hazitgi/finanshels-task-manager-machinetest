@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Board {
+  id      Int      @id @default(autoincrement())
+  name    String   
+  tasks   Task[]
+  columns Column[]
+}
+
+model Column {
+  id      Int      @id @default(autoincrement())
+  name    String
+  color   String
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  boardId Int
+  tasks   Task[]
+}
+
+model Task {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  order       Int
+  column      Column    @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  columnId    Int
+  board       Board     @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  boardId     Int
+}

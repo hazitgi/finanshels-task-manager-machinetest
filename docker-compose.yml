@@ -1,0 +1,106 @@
+version: "3.8"
+
+services:
+  nats:
+    image: nats-streaming:0.17.0
+    command:
+      [
+        "-p",
+        "4222",
+        "-m",
+        "8222",
+        "-hbi",
+        "5s",
+        "-hbt",
+        "5s",
+        "-hbf",
+        "2",
+        "-SD",
+        "-cid",
+        "task_manager",
+      ]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    restart: unless-stopped
+
+  task_manager_db:
+    image: postgres
+    container_name: task_manager_db
+    restart: unless-stopped
+    ports:
+      - "5430:5432"
+    shm_size: 500mb
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: task_manager
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  task_manager_service:
+    image: hazitgi/task
+    build:
+      context: ./task
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgres://postgres:root@task_manager_db:5432/task_manager
+      NATS_CLUSTER_ID: task_manager
+      NATS_URL: nats://nats:4222
+    depends_on:
+      - task_manager_db
+      - nats
+    volumes:
+      - ./task:/app
+    working_dir: /app
+    command: >
+      sh -c "
+        while ! nc -z task_manager_db 5432; do
+          echo 'Waiting for PostgreSQL to become available...'
+          sleep 1
+        done
+        echo 'PostgreSQL is available'
+        npx prisma generate
+        npx prisma migrate dev --name init
+        npm run start:dev
+      "
+    restart: unless-stopped
+
+  notification-service:
+    image: hazitgi/notifications
+    build:
+      context: ./notifications
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      NATS_CLUSTER_ID: task_manager
+      NATS_URL: nats://nats:4222
+    depends_on:
+      - nats
+    volumes:
+      - ./notifications:/app
+    working_dir: /app
+    command: npm run start:dev
+    restart: unless-stopped
+
+  client_service:
+    image: hazitgi/next-kanban-dashboard-client
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - task_manager_service
+      - notification-service
+    volumes:
+      - ./client:/app
+    working_dir: /app
+    command: npm run dev
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
