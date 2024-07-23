@@ -225,6 +225,16 @@ const taskReducer = createSlice({
     columnRemoved: (state, action: PayloadAction<any>) => {
       state.columns = state.columns?.filter(column => column.id !== action.payload.data.id) || []
     },
+    taskDragged: (state, action: PayloadAction<any>) => {
+      let column = state.columns?.find(col => col.id === action.payload.data.columnId);
+      if (column) {
+        column.tasks = column.tasks.filter(task => task.id !== action.payload.data.id);
+      }
+      column = state.columns?.find(col => col.id === action.payload.data.columnId);
+      if (column) {
+        column.tasks.push(action.payload.data);
+      }
+    },
     // real-time updates end
   },
   extraReducers: (builder) => {

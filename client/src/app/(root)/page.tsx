@@ -2,9 +2,19 @@
 import { DraggableCard } from "@/components/app/draggable-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { boardCreated, boardRemoved, boardUpdated, columnRemoved, fetchBoard, fetchColumnTask, moveTasks, setErrorData, taskCreated, taskRemoved, taskUpdated } from "@/redux/reducers/task.reducer";
+import {
+  boardCreated,
+  boardRemoved,
+  boardUpdated,
+  columnRemoved,
+  fetchColumnTask,
+  moveTasks,
+  taskCreated,
+  taskRemoved,
+  taskUpdated,
+} from "@/redux/reducers/task.reducer";
 import { useAppSelector, useAppDispatch } from "@/redux/store";
-import { TodoColumn } from "@/types/todo.types";
+import { Task, TodoColumn } from "@/types/todo.types";
 import { Plus, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import {
@@ -14,28 +24,41 @@ import {
   DropResult,
 } from "react-beautiful-dnd";
 import { useForm } from "react-hook-form";
-import { date, z } from "zod";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { statusAddSchema } from "../../lib/schema/statusAddschema";
 import useSocket from "@/hooks/useSocket";
-import { BOARD_CREATED, BOARD_REMOVED, BOARD_UPDATED, COLUMN_REMOVED, TASK_CREATED, TASK_REMOVED, TASK_UPDATED } from "@/redux/reducers/actionType";
+import {
+  BOARD_CREATED,
+  BOARD_REMOVED,
+  BOARD_UPDATED,
+  COLUMN_REMOVED,
+  TASK_CREATED,
+  TASK_DRAGGED,
+  TASK_REMOVED,
+  TASK_UPDATED,
+} from "@/redux/reducers/actionType";
+import API from "./api";
 
 const Home = () => {
-  const { columns: reduxCol, error, selectedBoardId, } = useAppSelector((state) => state.task);
+  const { columns: reduxCol, error, selectedBoardId } = useAppSelector(
+    (state) => state.task
+  );
+  // let columns = reduxCol as TodoColumn[];
   const dispatch = useAppDispatch();
   const [columns, setColumns] = useState<TodoColumn[]>([]);
 
   useEffect(() => {
     dispatch(fetchColumnTask({ columnId: selectedBoardId }));
-  }, [dispatch, selectedBoardId])
+  }, [dispatch, selectedBoardId]);
 
   useEffect(() => {
     setColumns(reduxCol as TodoColumn[]);
   }, [reduxCol]);
 
   const socket = useSocket(process.env.NEXT_SOCKET_URL || "http://localhost:5000");
+
   useEffect(() => {
-    BOARD_CREATED
     if (socket) {
       socket.on(BOARD_CREATED, (data) => {
         dispatch(boardCreated(data));
@@ -58,9 +81,11 @@ const Home = () => {
       socket.on(COLUMN_REMOVED, (data) => {
         dispatch(columnRemoved(data));
       });
+      socket.on(TASK_DRAGGED, (data) => {
+        dispatch(columnRemoved(data));
+      });
     }
-
-  }, [socket])
+  }, [socket]);
 
   type StatusSchema = z.infer<typeof statusAddSchema>;
   const {
@@ -74,50 +99,92 @@ const Home = () => {
     mode: "onChange",
     reValidateMode: "onChange",
   });
+
   const handleStatusAddFormSubmit = (values: StatusSchema) => { };
-  const handleDragEnd = (result: DropResult) => {
-    console.log("Drag result:", result); // Debugging output
 
-    const { source, destination } = result;
-
-    // If there's no destination, exit the function
-    if (!destination) {
+  const handleDragEnd = async (result: DropResult) => {
+    const { draggableId, source, destination } = result;
+  
+    // If there's no destination, return
+    if (!destination) return;
+  
+    // If the source and destination are the same, return
+    if (source.droppableId === destination.droppableId && source.index === destination.index) {
       return;
     }
-
-    // Create a copy of the columns array to ensure immutability
+  
+    // Create a deep copy of the columns array
     const updatedColumns = columns.map((column) => ({
       ...column,
-      tasks: [...column.tasks], // Ensure tasks are copied
+      tasks: column.tasks.map((task) => ({ ...task })), // Ensure tasks are deeply copied
     }));
-
+  
     // Find the source and destination columns
     const startColumnIndex = updatedColumns.findIndex(
-      (col) => col.id === source.droppableId
+      (col) => col.id === parseInt(source.droppableId)
     );
     const endColumnIndex = updatedColumns.findIndex(
-      (col) => col.id === destination.droppableId
+      (col) => col.id === parseInt(destination.droppableId)
     );
-
+  
     if (startColumnIndex !== -1 && endColumnIndex !== -1) {
       const startColumn = updatedColumns[startColumnIndex];
       const endColumn = updatedColumns[endColumnIndex];
-
+  
+      let updatedTask: Task | null = null;
+  
       // Reorder tasks within the same column
       if (source.droppableId === destination.droppableId) {
         const [movedTask] = startColumn.tasks.splice(source.index, 1);
         startColumn.tasks.splice(destination.index, 0, movedTask);
+  
+        // Update the task's order in the start column
+        startColumn.tasks = startColumn.tasks.map((task, index) => {
+          if (task.id === parseInt(draggableId)) {
+            updatedTask = { ...task, order: index + 1 };
+            return updatedTask;
+          }
+          return { ...task, order: index + 1 };
+        });
       } else {
         // Move tasks between columns
         const [movedTask] = startColumn.tasks.splice(source.index, 1);
-        endColumn.tasks.splice(destination.index, 0, movedTask);
+  
+        // Update the moved task's columnId and order
+        updatedTask = { ...movedTask, columnId: destination.droppableId.toString(), order: destination.index + 1 };
+        endColumn.tasks.splice(destination.index, 0, updatedTask);
+  
+        // Update the task's order in the destination column
+        endColumn.tasks = endColumn.tasks.map((task, index) => {
+          if (task.id === parseInt(draggableId)) {
+            return { ...task, order: index + 1 };
+          }
+          return { ...task, order: index + 1 };
+        });
+  
+        // Update the task's order in the start column
+        startColumn.tasks = startColumn.tasks.map((task, index) => ({
+          ...task,
+          order: index + 1,
+        }));
       }
-
+  
+      // Save the updated task data to the API
+      if (updatedTask) {
+        try {
+          let columnId = parseInt(updatedTask.columnId)
+          await API.put(`/task/${updatedTask.id}/drag`, {...updatedTask,columnId});
+        } catch (error) {
+          console.error('Failed to save task data:', error);
+        }
+      }
+  
       // Update the state with the modified columns array
-      setColumns(updatedColumns);
+      // setColumns(updatedColumns);
       dispatch(moveTasks(updatedColumns));
     }
   };
+
 
   return (
     <main className="w-full h-full p-5 overflow-x-hidden scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-300 ">
@@ -134,7 +201,6 @@ const Home = () => {
               <div className="w-full flex justify-between">
                 <h1>Add new status</h1>
                 <form method="dialog">
-                  {/* if there is a button in form, it will close the modal */}
                   <button className=" ">
                     <X className="w-5" />
                   </button>
@@ -158,7 +224,7 @@ const Home = () => {
                     }}
                   />
                   <span className="text-[13px] text-red-600">
-                    {/* {errors && errors.name && errors.name?.message} */}
+                    {errors.status?.message}
                   </span>
                 </div>
                 <div className="w-full mt-3">

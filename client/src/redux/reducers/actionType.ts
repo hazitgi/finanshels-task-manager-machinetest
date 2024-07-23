@@ -6,6 +6,7 @@ export const TASK_CREATED = 'TASK_CREATED';
 export const TASK_UPDATED = 'TASK_UPDATED';
 export const TASK_REMOVED = 'TASK_REMOVED';
 export const COLUMN_REMOVED = 'COLUMN_REMOVED';
+export const TASK_DRAGGED = 'TASK_DRAGGED';
 
 export type EventSubject =
   | typeof BOARD_CREATED
@@ -14,4 +15,5 @@ export type EventSubject =
   | typeof TASK_CREATED
   | typeof TASK_UPDATED
   | typeof TASK_REMOVED
-  | typeof COLUMN_REMOVED;
+  | typeof COLUMN_REMOVED
+  | typeof TASK_DRAGGED;

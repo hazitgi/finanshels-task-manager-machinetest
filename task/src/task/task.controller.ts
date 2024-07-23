@@ -132,6 +132,33 @@ export class TaskController {
       );
     }
   }
+  @Put(':id/drag')
+  async drag(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
+    try {
+      // Transform the data to ensure it's in the correct format
+      const transformedData: Prisma.TaskUpdateInput = {
+        ...(updateTaskDto.order !== undefined && {
+          order: updateTaskDto.order,
+        }),
+      };
+
+      // Call the service to perform the update
+      const result = await this.taskService.update(+id, transformedData);
+      this.natsStreamingService.publish(EventSubjects.TASK_DRAGGED, {
+        data: result,
+      });
+      return result;
+    } catch (error: any) {
+      this.logger.error(`Failed to update task: ${error.message}`);
+      if (error instanceof CustomError) {
+        throw new HttpException(error.message, HttpStatus.CONFLICT);
+      }
+      throw new HttpException(
+        'Internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
