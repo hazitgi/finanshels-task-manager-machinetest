@@ -6,6 +6,7 @@ export const EventSubjects = {
   TASK_CREATED: 'TASK_CREATED',
   TASK_UPDATED: 'TASK_UPDATED',
   TASK_REMOVED: 'TASK_REMOVED',
+  COLUMN_REMOVED: 'COLUMN_REMOVED',
 } as const;
 
 export type EventSubject = keyof typeof EventSubjects;

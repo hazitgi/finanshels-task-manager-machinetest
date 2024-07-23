@@ -187,40 +187,43 @@ const taskReducer = createSlice({
 
     // real-time updates
     boardCreated: (state, action: PayloadAction<any>) => {
-      state.boards.push(action.payload);
-      state.columns = action.payload.columns;
+      state.boards.push(action.payload.data);
+      state.columns = action.payload.data.columns;
     },
     boardUpdated: (state, action: PayloadAction<any>) => {
-      const index = state.boards.findIndex(board => board.id === action.payload.id);
+      const index = state.boards.findIndex(board => board.id === action.payload.data.id);
       if (index !== -1) {
-        state.boards[index] = action.payload;
+        state.boards[index] = action.payload.data;
       }
-      state.columns = action.payload.columns;
+      state.columns = action.payload.data.columns;
     },
-    boardRemoved: (state, action: PayloadAction<{ id: string }>) => {
-      state.boards = state.boards.filter(board => board.id !== action.payload.id);
-      state.columns = state.columns?.filter(column => column.boardId !== action.payload.id) || [];
+    boardRemoved: (state, action: PayloadAction<any>) => {
+      state.boards = state.boards.filter(board => board.id !== action.payload.data.id);
+      state.columns = state.columns?.filter(column => column.boardId !== action.payload.data.id) || [];
     },
-    taskCreated: (state, action: PayloadAction<{ columnId: string | number; task: Task }>) => {
-      const column = state.columns?.find(col => col.id === action.payload.columnId);
+    taskCreated: (state, action: PayloadAction<any>) => {
+      const column = state.columns?.find(col => col.id === action.payload.data.columnId);
       if (column) {
-        column.tasks.push(action.payload.task);
+        column.tasks.push(action.payload.data);
       }
     },
-    taskUpdated: (state, action: PayloadAction<{ columnId: string | number; task: Task }>) => {
-      const column = state.columns?.find(col => col.id === action.payload.columnId);
+    taskUpdated: (state, action: PayloadAction<any>) => {
+      const column = state.columns?.find(col => col.id === action.payload.data.columnId);
       if (column) {
-        const taskIndex = column.tasks.findIndex(task => task.id === action.payload.task.id);
+        const taskIndex = column.tasks.findIndex(task => task.id === action.payload.data.id);
         if (taskIndex !== -1) {
-          column.tasks[taskIndex] = action.payload.task;
+          column.tasks[taskIndex] = action.payload.data;
         }
       }
     },
-    taskRemoved: (state, action: PayloadAction<{ columnId: string | number; taskId: string | number }>) => {
-      const column = state.columns?.find(col => col.id === action.payload.columnId);
+    taskRemoved: (state, action: PayloadAction<any>) => {
+      const column = state.columns?.find(col => col.id === action.payload.data.columnId);
       if (column) {
-        column.tasks = column.tasks.filter(task => task.id !== action.payload.taskId);
+        column.tasks = column.tasks.filter(task => task.id !== action.payload.data.id);
       }
+    },
+    columnRemoved: (state, action: PayloadAction<any>) => {
+      state.columns = state.columns?.filter(column => column.id !== action.payload.data.id) || []
     },
     // real-time updates end
   },
@@ -249,4 +252,4 @@ const taskReducer = createSlice({
 });
 
 export default taskReducer.reducer;
-export const { moveTasks, setErrorData, setSelectedBoard, boardCreated, boardUpdated, boardRemoved, taskCreated, taskRemoved, taskUpdated } = taskReducer.actions;
+export const { moveTasks, setErrorData, setSelectedBoard, boardCreated, boardUpdated, boardRemoved, taskCreated, taskRemoved, taskUpdated, columnRemoved } = taskReducer.actions;

@@ -2,7 +2,7 @@
 import { DraggableCard } from "@/components/app/draggable-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { boardCreated, fetchBoard, fetchColumnTask, moveTasks, setErrorData } from "@/redux/reducers/task.reducer";
+import { boardCreated, boardRemoved, boardUpdated, columnRemoved, fetchBoard, fetchColumnTask, moveTasks, setErrorData, taskCreated, taskRemoved, taskUpdated } from "@/redux/reducers/task.reducer";
 import { useAppSelector, useAppDispatch } from "@/redux/store";
 import { TodoColumn } from "@/types/todo.types";
 import { Plus, X } from "lucide-react";
@@ -18,7 +18,7 @@ import { date, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { statusAddSchema } from "../../lib/schema/statusAddschema";
 import useSocket from "@/hooks/useSocket";
-import { BOARD_CREATED, BOARD_REMOVED, BOARD_UPDATED } from "@/redux/reducers/actionType";
+import { BOARD_CREATED, BOARD_REMOVED, BOARD_UPDATED, COLUMN_REMOVED, TASK_CREATED, TASK_REMOVED, TASK_UPDATED } from "@/redux/reducers/actionType";
 
 const Home = () => {
   const { columns: reduxCol, error, selectedBoardId, } = useAppSelector((state) => state.task);
@@ -41,10 +41,22 @@ const Home = () => {
         dispatch(boardCreated(data));
       });
       socket.on(BOARD_REMOVED, (data) => {
-        dispatch(boardCreated(data));
+        dispatch(boardRemoved(data));
       });
       socket.on(BOARD_UPDATED, (data) => {
-        dispatch(boardCreated(data));
+        dispatch(boardUpdated(data));
+      });
+      socket.on(TASK_CREATED, (data) => {
+        dispatch(taskCreated(data));
+      });
+      socket.on(TASK_UPDATED, (data) => {
+        dispatch(taskUpdated(data));
+      });
+      socket.on(TASK_REMOVED, (data) => {
+        dispatch(taskRemoved(data));
+      });
+      socket.on(COLUMN_REMOVED, (data) => {
+        dispatch(columnRemoved(data));
       });
     }
 
