@@ -144,9 +144,10 @@ export const fetchBoard = createAsyncThunk(
 export const fetchColumnTask = createAsyncThunk(
   'tasks/fetchColumnTask',
   async ({ columnId }: { columnId: number | string }, thunkAPI) => {
-    console.log(columnId);
-
     try {
+      if (!columnId) {
+        return;  // if columnId is not provided, return early
+      }
       const response = await API.get(`board/${columnId}/column`);
       console.log(">>>>>>>>>>>>", response.data, ">>>>>");
 
@@ -254,4 +255,4 @@ const taskReducer = createSlice({
 });
 
 export default taskReducer.reducer;
-export const { moveTasks, setErrorData, setSelectedBoard, boardCreated, boardUpdated, boardRemoved, taskCreated, taskRemoved, taskUpdated, columnRemoved,columnCreated } = taskReducer.actions;
+export const { moveTasks, setErrorData, setSelectedBoard, boardCreated, boardUpdated, boardRemoved, taskCreated, taskRemoved, taskUpdated, columnRemoved, columnCreated } = taskReducer.actions;
