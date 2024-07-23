@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { Prisma } from '@prisma/client';
-import { CreateBoardDto } from './dto/create-board.dto';
+import { CreateBoardDto, CreateColumnDto } from './dto/create-board.dto';
 import { CustomError } from 'common/exceptions/custom.error';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { NatsStreamingService } from 'src/nats/nats.service';
@@ -42,6 +42,71 @@ export class BoardController {
       };
       const result = await this.boardService.create(transformedData);
       this.natsStreamingService.publish(EventSubjects.BOARD_CREATED, {
+        data: result,
+      });
+      return result;
+    } catch (error: any) {
+      this.logger.error(`Failed to create board: ${error.message}`);
+      if (error instanceof CustomError) {
+        throw new HttpException(error.message, HttpStatus.CONFLICT);
+      }
+      throw new HttpException(
+        'Internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  /* API for add column */
+  @Post(':id/addcolumn')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async addColumn(
+    @Param('id') id: string,
+    @Body() createdColumnDto: CreateColumnDto,
+  ) {
+    try {
+      // Transform the data to ensure it's in the correct format
+      const transformedData: Prisma.ColumnCreateInput = {
+        name: createdColumnDto.name,
+        color: createdColumnDto.color,
+        board: { connect: { id: +id } },
+      };
+      console.log(transformedData);
+      const result = await this.boardService.addColumn(transformedData);
+      this.natsStreamingService.publish(EventSubjects.COLUMN_CREATED, {
+        data: result,
+      });
+      return result;
+    } catch (error: any) {
+      this.logger.error(`Failed to create board: ${error.message}`);
+      if (error instanceof CustomError) {
+        throw new HttpException(error.message, HttpStatus.CONFLICT);
+      }
+      throw new HttpException(
+        'Internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  /* API for update column */
+  @Put(':id/update-column/:columnId')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async updateColumn(
+    @Param('id') id: string,
+    @Param('columnId') columnId: string,
+    @Body() createdColumnDto: CreateColumnDto,
+  ) {
+    try {
+      // Transform the data to ensure it's in the correct format
+      const transformedData: Prisma.ColumnCreateInput = {
+        name: createdColumnDto.name,
+        color: createdColumnDto.color,
+        board: { connect: { id: +id } },
+      };
+      const result = await this.boardService.updateColumn(
+        transformedData,
+        +columnId,
+      );
+      this.natsStreamingService.publish(EventSubjects.COLUMN_CREATED, {
         data: result,
       });
       return result;

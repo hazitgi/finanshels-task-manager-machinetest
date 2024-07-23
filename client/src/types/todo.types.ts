@@ -9,7 +9,7 @@ export interface Task {
   slug: string;
   description: string;
   status: string; // Added status
-  subtasks: Subtask[];
+  // subtasks: Subtask[];
   order: number; // Changed to 'order'
   columnId: string; // Added to match the data
   boardId: string; // Added to match the data

@@ -35,6 +35,32 @@ export class BoardService {
       throw error;
     }
   }
+  async addColumn(data: Prisma.ColumnCreateInput): Promise<Board> {
+    try {
+      const result = await this.prisma.column.create({
+        data,
+      });
+      return result;
+    } catch (error) {
+      this.logger.error(`Failed to create board: ${error.message}`);
+      throw error;
+    }
+  }
+  async updateColumn(
+    data: Prisma.ColumnCreateInput,
+    columnId: number,
+  ): Promise<Board> {
+    try {
+      const result = await this.prisma.column.update({
+        where: { id: columnId },
+        data,
+      });
+      return result;
+    } catch (error) {
+      this.logger.error(`Failed to create board: ${error.message}`);
+      throw error;
+    }
+  }
 
   async findAll(): Promise<Board[]> {
     try {

@@ -225,6 +225,9 @@ const taskReducer = createSlice({
     columnRemoved: (state, action: PayloadAction<any>) => {
       state.columns = state.columns?.filter(column => column.id !== action.payload.data.id) || []
     },
+    columnCreated: (state, action: PayloadAction<any>) => {
+      state.columns?.push(action.payload.data);
+    },
     // real-time updates end
   },
   extraReducers: (builder) => {
@@ -252,4 +255,4 @@ const taskReducer = createSlice({
 });
 
 export default taskReducer.reducer;
-export const { moveTasks, setErrorData, setSelectedBoard, boardCreated, boardUpdated, boardRemoved, taskCreated, taskRemoved, taskUpdated, columnRemoved } = taskReducer.actions;
+export const { moveTasks, setErrorData, setSelectedBoard, boardCreated, boardUpdated, boardRemoved, taskCreated, taskRemoved, taskUpdated, columnRemoved,columnCreated } = taskReducer.actions;

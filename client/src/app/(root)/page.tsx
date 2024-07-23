@@ -11,11 +11,11 @@ import {
   moveTasks,
   taskCreated,
   taskRemoved,
-  taskUpdated,
+  taskUpdated, columnCreated
 } from "@/redux/reducers/task.reducer";
 import { useAppSelector, useAppDispatch } from "@/redux/store";
 import { Task, TodoColumn } from "@/types/todo.types";
-import { Plus, X } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import {
   Droppable,
@@ -32,6 +32,7 @@ import {
   BOARD_CREATED,
   BOARD_REMOVED,
   BOARD_UPDATED,
+  COLUMN_CREATED,
   COLUMN_REMOVED,
   TASK_CREATED,
   TASK_DRAGGED,
@@ -39,6 +40,8 @@ import {
   TASK_UPDATED,
 } from "@/redux/reducers/actionType";
 import API from "./api";
+import { AddTask } from "@/components/app/add-task";
+import { getRandomColor } from "@/lib/utils";
 
 const Home = () => {
   const { columns: reduxCol, error, selectedBoardId } = useAppSelector(
@@ -85,6 +88,9 @@ const Home = () => {
         dispatch(taskRemoved(data));
         dispatch(taskCreated(data));
       });
+      socket.on(COLUMN_CREATED, async (data) => {
+        dispatch(columnCreated(data));
+      });
     }
   }, [socket, dispatch]);
 
@@ -101,7 +107,10 @@ const Home = () => {
     reValidateMode: "onChange",
   });
 
-  const handleStatusAddFormSubmit = (values: StatusSchema) => { };
+  const handleStatusAddFormSubmit = async (values: StatusSchema) => {
+    console.log(values);
+    await API.post(`/board/${selectedBoardId}/addcolumn`, { name: values.status, color: getRandomColor() });
+  };
 
   const handleDragEnd = async (result: DropResult) => {
     const { draggableId, source, destination } = result;
@@ -186,6 +195,12 @@ const Home = () => {
     }
   };
 
+  const columnDelete = async (columnId: string | number, boardId: number | string) => {
+    const userConfirmation = window.confirm(`Are you sure you want to delete this?`);
+    if (!userConfirmation) return;
+    await API.delete(`/board/${boardId}/column/${columnId}`);
+  }
+
 
   return (
     <main className="w-full h-full p-5 overflow-x-hidden scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-300 ">
@@ -202,6 +217,7 @@ const Home = () => {
               <div className="w-full flex justify-between">
                 <h1>Add new status</h1>
                 <form method="dialog">
+                  {/* if there is a button in form, it will close the modal */}
                   <button className=" ">
                     <X className="w-5" />
                   </button>
@@ -217,7 +233,7 @@ const Home = () => {
                   </label>
                   <Input
                     type="text"
-                    placeholder="Board name"
+                    placeholder="Enter new status"
                     value={watch("status")}
                     onChange={(e) => {
                       setValue("status", e.target.value);
@@ -225,7 +241,7 @@ const Home = () => {
                     }}
                   />
                   <span className="text-[13px] text-red-600">
-                    {errors.status?.message}
+                    {/* {errors && errors.name && errors.name?.message} */}
                   </span>
                 </div>
                 <div className="w-full mt-3">
@@ -260,7 +276,7 @@ const Home = () => {
               ref={provided.innerRef}
               className="w-full mt-4 h-full pb-10 overflow-x-auto scrollbar-none space-x-2 whitespace-nowrap relative flex"
             >
-              {columns?.map((column) => (
+              {columns?.map((column, I) => (
                 <Droppable key={column.id} droppableId={column.id.toString()}>
                   {(provider) => (
                     <div
@@ -268,14 +284,23 @@ const Home = () => {
                       {...provider.droppableProps}
                       ref={provider.innerRef}
                     >
-                      <div className="bg-white-2 w-80 h-full rounded-xl p-5">
-                        <div className="w-full flex justify-between pb-5 border-b-2">
+                      <div className={`bg-white-2 w-80 h-full rounded-xl p-5`}>
+                        <div className="w-full flex justify-between pb-5 ">
                           <div>
                             <span className="font-medium">{column.name}</span>
                           </div>
-                          <div className="size-7 border fullcenter rounded-md bg-[white] shadow-md cursor-pointer">
-                            <Plus className="w-4" />
+                          <div className="flex gap-2">
+                            <div className="size-7 border fullcenter rounded-md bg-[white] shadow-md cursor-pointer hover:bg-yellow-300">
+                              <Trash2 className="w-4 hover:text-red-800 " onClick={() => columnDelete(column.id, column.boardId)} />
+                            </div>
+                            {/* <div className="size-7 border fullcenter rounded-md bg-[white] shadow-md cursor-pointer hover:bg-yellow-300">
+                              <Trash2 className="w-4 hover:text-red-800 " onClick={() => columnDelete(column.id, column.boardId)} />
+                            </div> */}
+
                           </div>
+                        </div>
+                        <div className="w-full flex justify-end pb-5 border-b-2">
+                          <AddTask index={I} column={column} />
                         </div>
                         <div className="flex flex-col mt-4">
                           {column.tasks?.map((task, index) => (
@@ -287,7 +312,9 @@ const Home = () => {
                               {(provided) => (
                                 <DraggableCard
                                   title={task.title}
+                                  Idx={index + "TSK" + I}
                                   description={task.description}
+                                  task={task}
                                   draggableProps={provided.draggableProps}
                                   dragHandleProps={provided.dragHandleProps}
                                   ref={provided.innerRef}
@@ -307,7 +334,7 @@ const Home = () => {
           )}
         </Droppable>
       </DragDropContext>
-    </main>
+    </main >
   );
 };
 

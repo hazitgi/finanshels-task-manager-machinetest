@@ -1,4 +1,3 @@
-# task-manager-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,13 +15,12 @@ spec:
       containers:
         - name: task-manager-service
           image: hazitgi/task
+          imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 3000
+            - containerPort: 4000
           env:
             - name: DATABASE_URL
-              # value: mongodb+srv://hazitgi:10ywYcu2N9DpjmQR@cluster0.zk59qiz.mongodb.net/task_manager?retryWrites=true&w=majority
-              value: "mongodb://task-manager-db:27017/task_manager"
-
+              value: "postgres://postgres:root@task-manager-db:5432/task_manager"
             - name: NATS_CLUSTER_ID
               value: task_manager
             - name: NATS_URL
@@ -38,21 +36,7 @@ metadata:
   name: task-manager-service
 spec:
   ports:
-    - port: 3000
-      targetPort: 3000
+    - port: 4000
+      targetPort: 4000
   selector:
     app: task-manager-service
-
----
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   name: task-nodeport-service
-# spec:
-#   ports:
-#     - port: 5000
-#       targetPort: 5000
-#       nodePort: 30002 # You can specify your preferred node port here
-#   selector:
-#     app: task-service
-#   type: NodePort

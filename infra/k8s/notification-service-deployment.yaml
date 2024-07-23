@@ -17,7 +17,7 @@ spec:
         - name: notification-service
           image: hazitgi/notifications
           ports:
-            - containerPort: 4000
+            - containerPort: 5000
           env:
             - name: NATS_CLUSTER_ID
               value: task_manager
@@ -34,8 +34,8 @@ metadata:
   name: notification-service
 spec:
   ports:
-    - port: 4000
-      targetPort: 4000
+    - port: 5000
+      targetPort: 5000
   selector:
     app: notification-service
 

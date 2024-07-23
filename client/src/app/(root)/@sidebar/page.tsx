@@ -1,5 +1,6 @@
+
 "use client";
-import { Logs, X } from "lucide-react";
+import { Logs, Trash, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
@@ -10,13 +11,20 @@ import { useForm } from "react-hook-form";
 import { boardSchema } from "../../../lib/schema/board.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAppSelector, useAppDispatch } from "@/redux/store";
-import { addNewBoard, fetchBoard, setSelectedBoard } from "@/redux/reducers/task.reducer";
+import {
+  addNewBoard,
+  fetchBoard,
+  setSelectedBoard,
+} from "@/redux/reducers/task.reducer";
 import { getRandomColor } from "@/lib/utils";
+import { EditBoard } from "@/components/app/edit-bard";
+import API from "../api";
 
 export default function SideBar() {
   const dispatch = useAppDispatch();
   const { boards, selectedBoardId } = useAppSelector((state) => state.task);
   const modalRef = useRef<HTMLButtonElement>(null);
+  const modalRef2 = useRef<HTMLButtonElement>(null);
   type BoardSchema = z.infer<typeof boardSchema>;
 
   useEffect(() => {
@@ -47,28 +55,31 @@ export default function SideBar() {
   });
   const [statusTxt, setStatusTx] = useState<string>("");
   const handleBoardAdd = (values: BoardSchema) => {
-    const userConfirmatin = window.confirm('Are you sure you want to add a new board?')
-    if (!userConfirmatin) { return }
+    const userConfirmatin = window.confirm(
+      "Are you sure you want to add a new board?"
+    );
+    if (!userConfirmatin) {
+      return;
+    }
 
-    const slug = values.name.toLowerCase().replace(/\s+/g, '-');
+    // const slug = values.name.toLowerCase().replace(/\s+/g, "-");
     const columns = values.columns.map((item) => {
       return {
         name: item,
-        slug: item.toLocaleLowerCase().replace(/\s+/g, '-'),
-        color: getRandomColor()
-      }
-    })
+        // slug: item.toLocaleLowerCase().replace(/\s+/g, "-"),
+        color: getRandomColor(),
+      };
+    });
     const data = {
       name: values.name,
-      slug: slug,
-      columns: [...columns]
-    }
+      // slug: slug,
+      columns: [...columns],
+    };
     dispatch(addNewBoard(data));
     modalRef.current?.click();
-
   };
   return (
-    <aside className="h-screen overflow-y-auto scroll-smooth scrollbar-thin min-w-56 border-r  flex flex-col justify-between">
+    <aside className="h-screen overflow-y-auto scroll-smooth scrollbar-thin min-w-80 border-r  flex flex-col justify-between">
       <div className="flex-col flex">
         <div className="border-b p-5">
           <div className="w-full flex items-center justify-between">
@@ -91,13 +102,31 @@ export default function SideBar() {
             <div
               key={item.id}
               // href={"/"}
-              className={`flex px-5 items-center h-12 gap-3 relative hover:bg-black/5 transition-all duration-300 cursor-pointer ${item.id === selectedBoardId ? "bg-slate-300" : ""}`}
-              onClick={() => { dispatch(setSelectedBoard(item.id)) }}
+              className={`flex px-5 items-center h-12 gap-3 relative hover:bg-black/5 transition-all duration-300 cursor-pointer ${item.id === selectedBoardId ? "bg-slate-300" : ""
+                }`}
+              onClick={() => {
+                dispatch(setSelectedBoard(item.id));
+              }}
             >
               <div>
                 <Logs className="w-5" />
               </div>
-              <span className="text-sm font-medium">{item.name}</span>
+              <div className="flex justify-between w-full">
+                <div>
+                  <p className="text-sm font-medium mr-4">{item.name}</p>
+                </div>
+                <div className="flex gap-2 ">
+                  {/* <EditBoard key={item.id} data={item}/> */}
+                  <button onClick={() => {
+                    const userConfirmatin = window.confirm('Are you sure you want to delete this board?');
+                    if (userConfirmatin) {
+                      API.delete(`/board/${item.id}`)
+                    }
+                  }}>
+                    <Trash className="w-4" />
+                  </button>
+                </div>
+              </div>
               <div className="absolute top-0 right-0 h-full w-2 bg-black/10 shadow-md rounded-tl-md rounded-bl-md"></div>
             </div>
           ))}
