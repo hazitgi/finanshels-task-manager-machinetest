@@ -12,6 +12,10 @@ import { Server, Socket } from 'socket.io';
     origin: '*',
     methods: ['GET', 'POST'],
     credentials: true,
+    path: '/socket.io',
+    transports: ['websocket', 'polling'],
+    allowEIO3: true,
+    namespace: '/',
   },
 })
 export class SocketIoGateway

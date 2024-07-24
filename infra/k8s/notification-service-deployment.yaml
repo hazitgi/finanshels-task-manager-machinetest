@@ -2,19 +2,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: notification-service
+  name: notification-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: notification-service
+      app: notifications
   template:
     metadata:
       labels:
-        app: notification-service
+        app: notifications
     spec:
       containers:
-        - name: notification-service
+        - name: notifications
           image: hazitgi/notifications
           ports:
             - containerPort: 5000
@@ -31,13 +31,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: notification-service
+  name: notifications-service
 spec:
-  ports:
-    - port: 5000
-      targetPort: 5000
   selector:
-    app: notification-service
+    app: notifications
+  ports:
+    - name: notifications
+      protocol: TCP
+      port: 4000
+      targetPort: 4000
 
 ---
 # apiVersion: v1

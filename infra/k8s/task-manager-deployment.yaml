@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: task-manager-service
+  name: task-manager-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: task-manager-service
+      app: task-manager
   template:
     metadata:
       labels:
-        app: task-manager-service
+        app: task-manager
     spec:
       containers:
-        - name: task-manager-service
+        - name: task-manager
           image: hazitgi/task
           imagePullPolicy: IfNotPresent
           ports:
@@ -35,8 +35,11 @@ kind: Service
 metadata:
   name: task-manager-service
 spec:
-  ports:
-    - port: 4000
-      targetPort: 4000
   selector:
-    app: task-manager-service
+    app: task-manager
+  ports:
+    - name: task-manager
+      protocol: TCP
+      port: 4000
+      targetPort: 4000
+

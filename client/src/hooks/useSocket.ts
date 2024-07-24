@@ -1,15 +1,30 @@
 import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-const useSocket = (url: string) => {
+const useSocket = (url: string | undefined) => {
+    console.log("url", url);
+
     const socket: React.MutableRefObject<Socket | null> = useRef(null);
 
     useEffect(() => {
-        socket.current = io(url);
+        if (url) {
+            socket.current = io(url, {
+                path: '/socket.io',
+                transports: ['websocket', 'polling'],
+                rejectUnauthorized: false
+            });
+            socket.current.on('connect', () => {
+                console.log('Socket connected:', socket.current?.id);
+            });
 
-        return () => {
-            socket.current?.disconnect();
-        };
+            // Clean up on unmount
+            return () => {
+                if (socket.current) {
+                    socket.current.off('connect'); // Remove the connect listener
+                    socket.current.disconnect();
+                }
+            };
+        }
     }, [url]);
 
     return socket.current;

@@ -21,7 +21,7 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { NatsStreamingService } from 'src/nats/nats.service';
 import { EventSubjects } from 'common/events/subjects';
 
-@Controller('task')
+@Controller('api/task')
 export class TaskController {
   private readonly logger = new Logger(TaskController.name);
   constructor(

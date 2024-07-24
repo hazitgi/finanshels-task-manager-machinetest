@@ -20,7 +20,7 @@ import { UpdateBoardDto } from './dto/update-board.dto';
 import { NatsStreamingService } from 'src/nats/nats.service';
 import { EventSubjects } from 'common/events/subjects';
 
-@Controller('board')
+@Controller('api/board')
 export class BoardController {
   private readonly logger = new Logger(BoardController.name);
   constructor(

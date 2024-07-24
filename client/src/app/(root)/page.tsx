@@ -59,7 +59,17 @@ const Home = () => {
     setColumns(reduxCol as TodoColumn[]);
   }, [reduxCol]);
 
-  const socket = useSocket(process.env.NEXT_SOCKET_URL || "http://localhost:5000");
+  let socketURL;
+  if (typeof window === "undefined") {
+    let svc_name = "ingress-nginx-controller";
+    let ingress_nginx = "ingress-nginx";
+    socketURL = `https://${svc_name}.${ingress_nginx}.svc.cluster.local:5000/socket.io`;
+  } else {
+    if (process?.env?.NEXT_SOCKET_URL) {
+      socketURL = process.env.NEXT_SOCKET_URL
+    }
+  }
+  const socket = useSocket(socketURL);
 
   useEffect(() => {
     if (socket) {
