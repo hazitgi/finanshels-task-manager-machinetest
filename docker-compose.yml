@@ -93,6 +93,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:4000
+      NEXT_SOCKET_URL: http://localhost:5000
     depends_on:
       - task_manager_service
       - notification-service
